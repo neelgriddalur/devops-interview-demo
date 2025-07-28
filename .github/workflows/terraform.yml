@@ -38,13 +38,13 @@ jobs:
         run: |
           terraform init \
             -backend-config="bucket=$TF_STATE_BUCKET" \
-            -backend-config="key=$TF_STATE_KEY" \
+            -backend-config="key=$TF_STATE_KEY_PREFIX/${{ github.event.inputs.environment }}/terraform.tfstate" \
             -backend-config="region=$TF_STATE_REGION"
         working-directory: terraform/env/${{ github.event.inputs.environment }}
         env:
           TF_STATE_BUCKET: ${{ secrets.TERRAFORM_STATE_S3_BUCKET_NAME }}
           TF_STATE_REGION: ${{ secrets.TERRAFORM_STATE_S3_REGION }}
-          TF_STATE_KEY: ${{ secrets.TERRAFORM_STATE_S3_KEY_PREFIX }}/${{ github.event.inputs.environment }}/terraform.tfstate
+          TF_STATE_KEY_PREFIX: ${{ secrets.TERRAFORM_STATE_S3_KEY_PREFIX }}
 
       - name: Terraform Plan
         run: terraform plan -out=tfplan
