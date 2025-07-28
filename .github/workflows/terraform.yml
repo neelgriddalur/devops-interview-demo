@@ -4,8 +4,7 @@ on:
   workflows_dispatch:
     inputs:
       environment:
-        description: 'Select the environment to deploy infra for"
-
+        description: "Select the environment to deploy infra for"
 
 permissions:
   id-token: write
