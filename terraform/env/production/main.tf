@@ -5,6 +5,6 @@ provider "aws" {
 module "production" {
   source = "../../module/v1"
 
-  hostname = "oshi.production.griddalur.xyz"
+  hostname = "oshihealth.production.griddalur.xyz"
 }
 
