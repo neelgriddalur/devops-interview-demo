@@ -42,3 +42,5 @@ Desktop.ini
 
 # GitHub Actions temp data
 .github/*.log
+
+.terraform
