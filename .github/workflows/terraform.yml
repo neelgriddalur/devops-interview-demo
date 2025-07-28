@@ -1,0 +1,57 @@
+name: Deploy Infrastructure (Terraform)
+
+on:
+  workflows_dispatch:
+    inputs:
+      environment:
+        description: 'Select the environment to deploy infra for"
+
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+          role-session-name: devops-interview-demo-${{ github.actor }}-${{ github.run_id }} # so i know if this ever gets used...
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.TERRAFORM_STATE_S3_BUCKET_NAME }}" \
+            -backend-config="key=${{ secrets.TERRAFORM_STATE_S3_KEY_PREFIX }}/${{ github.event.inputs.environment }}/terraform.tfstate" \
+            -backend-config="region=${{ secrets.TERRAFORM_STATE_S3_REGION }}"
+        working-directory: terraform/env/${{ github.event.inputs.environment }}
+
+      - name: Terraform Plan
+        run: |
+          terraform plan \
+            -backend-config="bucket=${{ secrets.TERRAFORM_STATE_S3_BUCKET_NAME }}" \
+            -backend-config="key=${{ secrets.TERRAFORM_STATE_S3_KEY_PREFIX }}/${{ github.event.inputs.environment }}/terraform.tfstate" \
+            -backend-config="region=${{ secrets.TERRAFORM_STATE_S3_REGION }}" \
+            -out=tfplan
+        working-directory: terraform/env/${{ github.event.inputs.environment }}
+
+      - name: Terraform Apply
+        run: |
+          terraform apply \
+            -auto-approve \
+            -backend-config="bucket=${{ secrets.TERRAFORM_STATE_S3_BUCKET_NAME }}" \
+            -backend-config="key=${{ secrets.TERRAFORM_STATE_S3_KEY_PREFIX }}/${{ github.event.inputs.environment }}/terraform.tfstate" \
+            -backend-config="region=${{ secrets.TERRAFORM_STATE_S3_REGION }}" \
+            tfplan
+        working-directory: terraform/env/${{ github.event.inputs.environment }}
