@@ -5,6 +5,12 @@ on:
     inputs:
       environment:
         description: "Select the environment to deploy infra for"
+        required: true
+        default: "development"
+        type: choice
+        options:
+          - development
+          - production
 
 permissions:
   id-token: write
