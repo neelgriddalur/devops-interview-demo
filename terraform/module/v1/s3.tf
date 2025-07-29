@@ -12,6 +12,24 @@ resource "aws_s3_bucket_public_access_block" "block_public_access" {
 }
 
 data "aws_iam_policy_document" "bucket_policy" {
+  statement {
+    principals {
+      type = "AWS"
+      identifiers = [
+        aws_cloudfront_origin_access_identity.oai.iam_arn
+      ]
+    }
+
+    sid    = "AllowCloudFrontAccess"
+    effect = "Allow"
+
+    actions = [
+      "s3:GetObject",
+      "s3:GetObjectVersion"
+    ]
+
+    resources = ["${aws_s3_bucket.bucket.arn}/*"]
+  }
 }
 
 resource "aws_s3_bucket_policy" "bucket_policy" {
